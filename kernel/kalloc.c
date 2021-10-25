@@ -9,6 +9,7 @@
 #include "riscv.h"
 #include "defs.h"
 
+
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
@@ -23,9 +24,11 @@ struct {
   struct run *freelist;
 } kmem;
 
+
 void
 kinit()
 {
+  
   initlock(&kmem.lock, "kmem");
   freerange(end, (void*)PHYSTOP);
 }
@@ -59,6 +62,7 @@ kfree(void *pa)
   acquire(&kmem.lock);
   r->next = kmem.freelist;
   kmem.freelist = r;
+
   release(&kmem.lock);
 }
 
@@ -77,6 +81,25 @@ kalloc(void)
   release(&kmem.lock);
 
   if(r)
+
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+// Returns the amount of free memory
+uint64
+kfree_memory(void)
+{
+  struct run *r;
+  uint64 size = 0;
+
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  while (r) {
+    size += PGSIZE;
+    r = r->next;
+  }
+  release(&kmem.lock);
+
+  return size;
+} 

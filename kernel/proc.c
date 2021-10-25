@@ -5,6 +5,9 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "sysinfo.h"
+
+
 
 struct cpu cpus[NCPU];
 
@@ -274,13 +277,14 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
-
+  np->mask = p->mask;
   np->parent = p;
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
   // Cause fork to return 0 in the child.
+
   np->trapframe->a0 = 0;
 
   // increment reference counts on open file descriptors.
@@ -380,6 +384,7 @@ exit(int status)
   reparent(p);
 
   // Parent might be sleeping in wait().
+
   wakeup1(original_parent);
 
   p->xstate = status;
@@ -693,3 +698,18 @@ procdump(void)
     printf("\n");
   }
 }
+
+
+uint64
+proc_count(void)
+{
+  uint64 num = 0;
+  struct proc *p;
+
+  for (p = proc; p < &proc[NPROC]; p++) {
+    if (p->state != UNUSED)
+      num++;
+  }
+
+  return num;
+} 

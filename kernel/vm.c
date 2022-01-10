@@ -440,3 +440,17 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+void
+vmprintlevel(pagetable_t pagetable, int level)
+{
+    for (int i = 0l i < 512; i++)
+}
+
+
+void
+vmprint(pagetable_t pagetable)
+{
+    printf("page table %p\n", pagetable);
+    vmprintlevel(pagetable, 0);
+}
